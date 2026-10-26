@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # ------------------------------------------------------------
-# Banner
+# Banner (original, untouched)
 # ------------------------------------------------------------
 show_banner() {
   cat <<'EOF'
@@ -14,9 +14,7 @@ show_banner() {
  | |  | |  __/>  <| |____| | (_) | |_| | (_| |
  |_|  |_|\___/_/\_\\_____|_|\___/ \__,_|\__,_|
 
-           Developer: Michael
-   All-in-One Manager: HydroDactyl + Wings
-          + Cloudflared (HTTP/2 + IPv4)
+                Developer: Michael
 ====================================================
 EOF
 }
@@ -45,7 +43,6 @@ ensure_docker() {
   fi
 }
 
-# Write compose file with the panel domain and LE email baked in.
 write_compose_file() {
   local domain="$1"
   local le_email="$2"
@@ -90,7 +87,6 @@ services:
     panel:
         image: ghcr.io/blueprintframework/hydrodactyl:latest
         restart: no
-        # Bound to localhost – Cloudflare Tunnel is the ingress.
         ports:
             - '127.0.0.1:80:80'
             - '127.0.0.1:443:443'
@@ -124,7 +120,6 @@ networks:
 YAML
 }
 
-# Install / re-patch cloudflared with the given token (HTTP/2 + IPv4).
 install_cloudflared_service() {
   local token="$1"
 
@@ -158,7 +153,7 @@ install_cloudflared_service() {
 # Install
 # ------------------------------------------------------------
 do_install() {
-  echo ""
+  clear
   echo "=============================================="
   echo " HydroDactyl – Install"
   echo "=============================================="
@@ -192,6 +187,7 @@ do_install() {
   docker compose up -d
 
   sleep 10
+  clear
 
   cat <<EOF
 
@@ -202,10 +198,6 @@ do_install() {
   APP_URL : https://${PANEL_DOMAIN}
   LE email: ${LE_EMAIL}
 
-The panel is now requesting a Let's Encrypt cert for
-${PANEL_DOMAIN}.  For that to succeed, the Cloudflare
-Tunnel must first expose the panel over HTTP.
-
 📋 Step 1 — Set the tunnel to HTTP (temporary):
 
   1. Cloudflare Zero Trust → Networks → Tunnels
@@ -215,9 +207,6 @@ Tunnel must first expose the panel over HTTP.
         Type:    HTTP
         URL:     localhost:80
   4. Save and wait ~1–2 minutes for the cert to be issued.
-
-  Verify the cert exists:
-     ls /srv/pterodactyl/certs/live/${PANEL_DOMAIN}/
 
 📋 Step 2 — Switch the tunnel to HTTPS (final):
 
@@ -232,9 +221,6 @@ Tunnel must first expose the panel over HTTP.
 
      https://${PANEL_DOMAIN}
 
-You should now see the HydroDactyl login page with a valid
-Let's Encrypt certificate.
-
 ==============================================
 Developer: Michael
 ==============================================
@@ -245,7 +231,7 @@ EOF
 # Uninstall
 # ------------------------------------------------------------
 do_uninstall() {
-  echo ""
+  clear
   echo "=============================================="
   echo " HydroDactyl – Uninstall"
   echo "=============================================="
@@ -275,7 +261,7 @@ do_uninstall() {
 # Update
 # ------------------------------------------------------------
 do_update() {
-  echo ""
+  clear
   echo "=============================================="
   echo " HydroDactyl – Update"
   echo "=============================================="
@@ -293,10 +279,10 @@ do_update() {
 }
 
 # ------------------------------------------------------------
-# Pterodactyl Wings
+# Wings
 # ------------------------------------------------------------
 do_wings() {
-  echo ""
+  clear
   echo "=============================================="
   echo " Pterodactyl Wings – Auto Setup"
   echo "=============================================="
@@ -314,10 +300,10 @@ do_wings() {
 }
 
 # ------------------------------------------------------------
-# Cloudflared re-patch (token only)
+# Cloudflared re-patch
 # ------------------------------------------------------------
 do_cloudflared() {
-  echo ""
+  clear
   echo "=============================================="
   echo " Cloudflared – Reinstall / Re-patch"
   echo "=============================================="
@@ -335,10 +321,9 @@ do_cloudflared() {
 # Menu
 # ------------------------------------------------------------
 show_menu() {
+  clear
+  show_banner
   echo ""
-  echo "=============================================="
-  echo " HydroDactyl Manager"
-  echo "=============================================="
   echo " 1) Install HydroDactyl (with Cloudflare Tunnel)"
   echo " 2) Uninstall HydroDactyl"
   echo " 3) Update HydroDactyl"
@@ -351,8 +336,6 @@ show_menu() {
 
 main() {
   check_root
-  show_banner
-
   while true; do
     show_menu
     case "$CHOICE" in
@@ -361,7 +344,7 @@ main() {
       3) do_update ;;
       4) do_wings ;;
       5) do_cloudflared ;;
-      6) echo "Goodbye."; exit 0 ;;
+      6) clear; echo "Goodbye."; exit 0 ;;
       *) echo "Invalid option." ;;
     esac
     echo ""
